@@ -1,0 +1,42 @@
+
+name: Construir APK de MoneyStudio
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Android
+        uses: android-actions/setup-android@v3
+
+      - name: Construir APK
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleDebug
+          else
+            echo "No se encontro gradlew en el proyecto"
+            exit 1
+          fi
+
+      - name: Guardar APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoneyStudio-APK
+          path: app/build/outputs/apk/debug/*.apk
